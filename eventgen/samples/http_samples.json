@@ -1,0 +1,123 @@
+[
+    {
+        "time": 1724879342.692399, 
+        "protocol": "HTTP",
+        "client": {"ipaddr": "192.168.1.1"},
+        "server": {"ipaddr": "203.0.113.10"},
+        "method": "GET",
+        "uri": "/api/data",
+        "status_code": 200,
+        "round_trip_time": 150,
+        "request_header": {
+            "Host": "example.com",
+            "Accept": "application/json",
+            "User-Agent": "Mozilla/5.0"
+        },
+        "response_header": {
+            "Content-Type": "application/json",
+            "Content-Length": "1234"
+        },
+        "user_agent": "Mozilla/5.0",
+        "response_content_type": "application/json"
+    },
+    {
+        "protocol": "HTTPS",
+        "time": 1693148400,  
+        "client": {"ipaddr": "198.51.100.2"},
+        "server": {"ipaddr": "203.0.113.20"},
+        "method": "POST",
+        "uri": "/api/upload",
+        "status_code": 201,
+        "round_trip_time": 200,  
+        "request_header": {
+            "Host": "secure.example.com",
+            "Content-Type": "multipart/form-data",
+            "User-Agent": "Mozilla/5.0"
+        },
+        "response_header": {
+            "Content-Type": "application/json",
+            "Content-Length": "4321"
+        },
+        "user_agent": "Mozilla/5.0",
+        "response_content_type": "application/json"
+    },
+    {
+        "protocol": "HTTP",
+        "time": 1693152000,  
+        "client": {"ipaddr": "192.168.1.2"},
+        "server": {"ipaddr": "203.0.113.30"},
+        "method": "DELETE",
+        "uri": "/api/delete/123",
+        "status_code": 204,
+        "round_trip_time": 100,
+        "request_header": {
+            "Host": "example.com",
+            "User-Agent": "Mozilla/5.0"
+        },
+        "response_header": {},
+        "user_agent": "Mozilla/5.0",
+        "response_content_type": ""
+    },
+    {
+        "protocol": "HTTPS",
+        "time": 1693155600,  
+        "client": {"ipaddr": "203.0.113.5"},
+        "server": {"ipaddr": "198.51.100.10"},
+        "method": "PUT",
+        "uri": "/api/update/456",
+        "status_code": 200,
+        "round_trip_time": 180,
+        "request_header": {
+            "Host": "secure.example.com",
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0"
+        },
+        "response_header": {
+            "Content-Type": "application/json",
+            "Content-Length": "5678"
+        },
+        "user_agent": "Mozilla/5.0",
+        "response_content_type": "application/json"
+    },
+    {
+        "protocol": "HTTP",
+        "time": 1693159200, 
+        "client": {"ipaddr": "198.51.100.3"},
+        "server": {"ipaddr": "203.0.113.40"},
+        "method": "HEAD",
+        "uri": "/api/status",
+        "status_code": 200,
+        "round_trip_time": 50,
+        "request_header": {
+            "Host": "example.com",
+            "User-Agent": "Mozilla/5.0"
+        },
+        "response_header": {
+            "Content-Type": "application/json",
+            "Content-Length": "0"
+        },
+        "user_agent": "Mozilla/5.0",
+        "response_content_type": "application/json"
+    },
+    {
+        "protocol": "HTTPS",
+        "time": 1693162800, 
+        "client": {"ipaddr": "203.0.113.6"},
+        "server": {"ipaddr": "198.51.100.11"},
+        "method": "PATCH",
+        "uri": "/api/modify/789",
+        "status_code": 200,
+        "round_trip_time": 250, 
+        "request_header": {
+            "Host": "secure.example.com",
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0"
+        },
+        "response_header": {
+            "Content-Type": "application/json",
+            "Content-Length": "6789"
+        },
+        "user_agent": "Mozilla/5.0",
+        "response_content_type": "application/json"
+    }
+]
