@@ -44,11 +44,12 @@ def generate_event(sample, config):
     # Refactor data properties from event sample
     event["time"] = unix_time
     event["server"]["ipaddr"] = random.choice(config["server_ips"])
+    event["round_trip_time"] = random.randint(20, 500)
     
     # Check if the event is HTTP or HTTPS to capture transaction data
     # Create a dictionary with all relevant transaction data fields
     json_data = {
-        # "timestamp": event["time"],                                        # Transaction timestamp in ISO format
+        # "timestamp": event["time"],                                      # Transaction timestamp in ISO format
         "protocol": "HTTP" if event["protocol"] == "HTTP" else "HTTPS",    # Determine the protocol
         "client_ip": str(event["client"]["ipaddr"]),                       # Client IP address
         "server_ip": str(event["server"]["ipaddr"]),                       # Server IP address
