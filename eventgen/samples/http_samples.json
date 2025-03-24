@@ -18,7 +18,8 @@
             "Content-Length": "1234"
         },
         "user_agent": "Mozilla/5.0",
-        "response_content_type": "application/json"
+        "response_content_type": "application/json",
+        "user": "alice"
     },
     {
         "protocol": "HTTPS",
@@ -39,7 +40,8 @@
             "Content-Length": "4321"
         },
         "user_agent": "Mozilla/5.0",
-        "response_content_type": "application/json"
+        "response_content_type": "application/json",
+        "user": "bob"
     },
     {
         "protocol": "HTTP",
@@ -56,7 +58,8 @@
         },
         "response_header": {},
         "user_agent": "Mozilla/5.0",
-        "response_content_type": ""
+        "response_content_type": "",
+        "user": "carol"
     },
     {
         "protocol": "HTTPS",
@@ -77,7 +80,8 @@
             "Content-Length": "5678"
         },
         "user_agent": "Mozilla/5.0",
-        "response_content_type": "application/json"
+        "response_content_type": "application/json",
+        "user": "dave"
     },
     {
         "protocol": "HTTP",
@@ -97,7 +101,8 @@
             "Content-Length": "0"
         },
         "user_agent": "Mozilla/5.0",
-        "response_content_type": "application/json"
+        "response_content_type": "application/json",
+        "user": "eve"
     },
     {
         "protocol": "HTTPS",
@@ -118,6 +123,7 @@
             "Content-Length": "6789"
         },
         "user_agent": "Mozilla/5.0",
-        "response_content_type": "application/json"
+        "response_content_type": "application/json",
+        "user": "frank"
     }
 ]

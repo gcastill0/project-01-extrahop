@@ -6,6 +6,24 @@ import time
 from datetime import datetime as dt, timezone
 from aws_ip_generator import simulate_ips_for_region, us_east_ranges, us_west_ranges
 
+# Simulate a public IP Address
+def get_public_ip():
+    # Avoid private/reserved IP ranges (basic version)
+    while True:
+        ip = ".".join(str(random.randint(1, 254)) for _ in range(4))
+        if not ip.startswith(("10.", "172.", "192.", "127.")):  # skip private/reserved ranges
+            return ip
+        else:
+            return None
+
+# Rare IP address by very random chance
+def maybe_generate_public_ip(chance=0.001):
+    # 0.001 = 0.1% chance
+    if random.random() < chance:
+        return get_public_ip()
+    else:
+        return None
+
 # Load configuration from config.json
 def load_config(file_path='config.json'):
     """
@@ -41,10 +59,13 @@ def generate_event(sample, config):
     date = dt.now(timezone.utc)
     unix_time = date.timestamp()
 
+    # Get random IP address
+    client_public_ip = maybe_generate_public_ip()
+
     # Refactor data properties from event sample
     event["time"] = unix_time
     event["server"]["ipaddr"] = random.choice(config["server_ips"])
-    event["round_trip_time"] = random.randint(20, 500)
+    event["round_trip_time"]  = random.randint(20, 500)
     
     # Check if the event is HTTP or HTTPS to capture transaction data
     # Create a dictionary with all relevant transaction data fields
@@ -60,8 +81,13 @@ def generate_event(sample, config):
         "request_headers": event["request_header"],                        # HTTP request headers
         "response_headers": event["response_header"],                      # HTTP response headers
         "user_agent": event["user_agent"],                                 # User agent string
-        "content_type": event["response_content_type"]                     # Response content type
+        "content_type": event["response_content_type"],                    # Response content type
+        "user": event["user"]                                              # User
     }
+
+    # Update with rare remote IP
+    if event["user"] == 'alice' and client_public_ip is not None: 
+        json_data["client_ip"] = str(client_public_ip)
 
     # Convert the dictionary to a JSON string
     final_event = json.dumps(json_data)
