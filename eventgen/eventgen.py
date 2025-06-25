@@ -3,6 +3,7 @@ import os
 import requests
 import random
 import time
+import math
 from datetime import datetime as dt, timezone, timedelta
 from aws_ip_generator import simulate_ips_for_region, us_east_ranges, us_west_ranges
 from samplegen import getMaliciousEntry, getBeningEntries
@@ -147,7 +148,6 @@ def dispatch_event(events, config):
 def parse_size(size_str):
     units = {"B": 1, "KB": 1024, "MB": 1024**2, "GB": 1024**3, "PB": 1024**4}
     size, unit = size_str[:-2], size_str[-2:]
-    print("Looking for size: ", int(size) * units[unit])
     return int(size) * units[unit]
 
 def parse_time_range(time_range):
@@ -155,10 +155,7 @@ def parse_time_range(time_range):
     
     # Extract the numeric part and the unit
     number = int(time_range[:-1])
-    unit = time_range[-1]
-
-    print(number, unit, time_units[unit], number * time_units[unit])
-    
+    unit = time_range[-1]    
     if unit not in time_units:
         raise ValueError("Invalid time unit. Use 'm' for minutes, 'h' for hours, or 'd' for days.")
     
@@ -182,9 +179,9 @@ def generate_events(config):
 
     byte_limit = parse_size(config['output_size'])
     total_time_seconds = parse_time_range(config["time_range"])
-    average_event_size = calculate_average_event_size(events)
-    estimated_events = byte_limit / average_event_size
-    delay_per_event = total_time_seconds / estimated_events if estimated_events > 0 else 0
+    average_event_size = math.ceiling(calculate_average_event_size(events))
+    estimated_events = round(byte_limit / average_event_size)
+    delay_per_event = (total_time_seconds / estimated_events) * 0.8 if estimated_events > 0 else 0
 
     # Timing measurement
     start_time = time.time()
@@ -239,12 +236,13 @@ def generate_events(config):
       if current_time - last_print_time >= 60:
         elapsed_time = current_time - start_time
         elapsed_minutes = elapsed_time // 60
-        print(f"Sent {event_count} events, {total_bytes} bytes in {int(elapsed_minutes)} minute(s).")
+        print(f"{event_count} events out of {estimated_events}, {((event_count/estimated_events)*100):.2f} % in {int(elapsed_minutes)} minute(s).")
         last_print_time = current_time
+
       end_time = time.time()
       elapsed_loop_time = end_time - current_time
 
-    print(f"Sent {event_count} events, {total_bytes} bytes in {int(elapsed_minutes)} minute(s).")      
+    print(f"{event_count} events out of {estimated_events}, {((event_count/estimated_events)*100):.2f} % in {int(elapsed_minutes)} minute(s).")
 
 def main():
     config = load_config()

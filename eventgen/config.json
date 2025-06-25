@@ -1,6 +1,5 @@
 {
-  "samples": "samples/http_samples.json",
   "webhook_url": "https://ingest.us1.sentinelone.net/services/collector/event",
-  "output_size": "1GB",
-  "time_range": "8h"
+  "output_size": "10MB",
+  "time_range": "1h"
 }

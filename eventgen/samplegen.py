@@ -9,7 +9,7 @@ fake = Faker()
 # Define malicious patterns
 malicious_patterns = [
     ("/admin", "GET", 401, "WARN", "Probing for unsecured admin portal."),
-    ("/wp-login.php", "POST", 403, "WARN", "Login page—common brute-force target."),
+    ("/wp-login.php", "POST", 403, "WARN", "Login page common brute-force target."),
     ("/login", "POST", 401, "WARN", "Attempt to access generic login page."),
     ("/etc/passwd", "GET", 404, "WARN", "Unix password file enumeration attempt."),
     ("/index.php?user=admin'--", "GET", 403, "HIGH", "SQL injection using comment truncation."),
