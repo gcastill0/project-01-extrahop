@@ -1,6 +1,6 @@
 {
   "samples": "samples/http_samples.json",
-  "webhook_url": "https://ingest.us1.sentinelone.net/services/collector/raw?sourcetype=Extrahop",
-  "output_size": "2GB",
-  "time_range": "4h"
+  "webhook_url": "https://ingest.us1.sentinelone.net/services/collector/event",
+  "output_size": "1GB",
+  "time_range": "8h"
 }

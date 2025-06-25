@@ -3,8 +3,9 @@ import os
 import requests
 import random
 import time
-from datetime import datetime as dt, timezone
+from datetime import datetime as dt, timezone, timedelta
 from aws_ip_generator import simulate_ips_for_region, us_east_ranges, us_west_ranges
+from samplegen import getMaliciousEntry, getBeningEntries
 
 # Simulate a public IP Address
 def get_public_ip():
@@ -52,7 +53,23 @@ def load_config(file_path='config.json'):
 
     return config
 
+def generate_event_template():
+    event_template = {
+      "event" : {               
+        "message": "Message",
+        "severity": "INFO"
+      },
+      "time" : 1,  
+      "host": "D6T6RGQQ4T",    
+      "source" : "Python Generator",  
+      "sourcetype" : "",   
+      "index": "",        
+      "fields" : { }       
+    }
+    return event_template
+
 def generate_event(sample, config):
+    event_template = generate_event_template()
     event = sample.copy()
 
     # Real-time UTC date
@@ -62,8 +79,14 @@ def generate_event(sample, config):
     # Get random IP address
     client_public_ip = maybe_generate_public_ip()
 
+    # Format for the /event endpoint
+    event_template["event"]["message"] = event["message"]
+    event_template["event"]["severity"] = event["severity"]
+
     # Refactor data properties from event sample
-    event["time"] = unix_time
+    event_template["time"] = unix_time
+    event_template["sourcetype"] = "Extrahop"
+
     event["server"]["ipaddr"] = random.choice(config["server_ips"])
     event["round_trip_time"]  = random.randint(20, 500)
     
@@ -85,18 +108,21 @@ def generate_event(sample, config):
         "user": event["user"]                                              # User
     }
 
+    event_template["fields"] = json_data
+
     # Update with rare remote IP
-    if event["user"] == 'alice' and client_public_ip is not None: 
-        json_data["client_ip"] = str(client_public_ip)
+    # if event["user"] == 'alice' and client_public_ip is not None: 
+    #     json_data["client_ip"] = str(client_public_ip)
 
     # Convert the dictionary to a JSON string
-    final_event = json.dumps(json_data)
+    # final_event = json.dumps(json_data)
+    final_event = event_template
 
     # print(final_event)
 
     return final_event
 
-def dispatch_event(event, config):
+def dispatch_event(events, config):
     # Send the JSON data to the webhook URL using an HTTP POST request
 
     # Define the webhook URL where the JSON data will be sent
@@ -108,7 +134,11 @@ def dispatch_event(event, config):
         'Authorization': f'Bearer {config["auth_token"]}'
     }
 
-    response = requests.post(webhook_url, headers=headers, data=event)
+    # for event in events:
+    #     print(event, "\n\n")
+
+    payload = "\n".join(json.dumps(event) for event in events)    
+    response = requests.post(webhook_url, headers=headers, data=payload)
 
     # Check if the request was successful
     if response.status_code != 200:
@@ -126,6 +156,8 @@ def parse_time_range(time_range):
     # Extract the numeric part and the unit
     number = int(time_range[:-1])
     unit = time_range[-1]
+
+    print(number, unit, time_units[unit], number * time_units[unit])
     
     if unit not in time_units:
         raise ValueError("Invalid time unit. Use 'm' for minutes, 'h' for hours, or 'd' for days.")
@@ -145,20 +177,27 @@ def calculate_average_event_size(events):
 
 def generate_events(config):
     # Use the sample events to rehydrate new events in the future
-    f = open(config["samples"])
-    events = json.load(f)
+    # f = open(config["samples"])
+    events = getBeningEntries()
 
     byte_limit = parse_size(config['output_size'])
     total_time_seconds = parse_time_range(config["time_range"])
-
     average_event_size = calculate_average_event_size(events)
-    estimated_events = byte_limit // average_event_size
+    estimated_events = byte_limit / average_event_size
     delay_per_event = total_time_seconds / estimated_events if estimated_events > 0 else 0
 
     # Timing measurement
     start_time = time.time()
     last_print_time = start_time
     elapsed_minutes = 0
+    elapsed_time = 0
+    elapsed_loop_time = 0
+
+    # Calculate a random delay within the first 10 minutes
+    jitter_minutes = random.randint(0, 9)
+    jitter_seconds = random.randint(0, 59)
+    attack_delay = jitter_minutes * 60 + jitter_seconds
+    attack_time = dt.now(timezone.utc) + timedelta(seconds=attack_delay)
 
     # Number of events
     event_count = 0
@@ -166,20 +205,44 @@ def generate_events(config):
     # Loop control
     total_bytes = 0
 
+    event_bundle = []
+
     while total_bytes < byte_limit:
+      current_time = time.time()
       sample = random.choice(events)
+    
       event = generate_event(sample, config)
-      dispatch_event(event, config)
-      total_bytes += len(event.encode())
+
+      if dt.now(timezone.utc) > attack_time:
+          event = generate_event(getMaliciousEntry(), config)
+          # Calculate a random delay within the next 40 minutes to 1 hour
+          jitter_minutes = random.randint(40, 59)
+          jitter_seconds = random.randint(0, 59)
+          attack_delay = jitter_minutes * 60 + jitter_seconds
+          attack_time = dt.now(timezone.utc) + timedelta(seconds=attack_delay)
+
+      event_bundle.append(event)
+
+      elapsed_time += elapsed_loop_time
+
+      if (elapsed_time >= 1):
+        # print(json.dumps(event_bundle))
+        
+        dispatch_event(event_bundle, config)
+        event_bundle = []
+        elapsed_time = 0
+
+      total_bytes += len(event)
       event_count += 1
       time.sleep(delay_per_event)
 
-      current_time = time.time()
       if current_time - last_print_time >= 60:
         elapsed_time = current_time - start_time
         elapsed_minutes = elapsed_time // 60
         print(f"Sent {event_count} events, {total_bytes} bytes in {int(elapsed_minutes)} minute(s).")
         last_print_time = current_time
+      end_time = time.time()
+      elapsed_loop_time = end_time - current_time
 
     print(f"Sent {event_count} events, {total_bytes} bytes in {int(elapsed_minutes)} minute(s).")      
 
