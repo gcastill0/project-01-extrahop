@@ -179,9 +179,9 @@ def generate_events(config):
 
     byte_limit = parse_size(config['output_size'])
     total_time_seconds = parse_time_range(config["time_range"])
-    average_event_size = math.ceiling(calculate_average_event_size(events))
+    average_event_size = math.ceil(calculate_average_event_size(events))
     estimated_events = round(byte_limit / average_event_size)
-    delay_per_event = (total_time_seconds / estimated_events) * 0.8 if estimated_events > 0 else 0
+    delay_per_event = (total_time_seconds / estimated_events) * 0.75 if estimated_events > 0 else 0
 
     # Timing measurement
     start_time = time.time()
@@ -204,7 +204,7 @@ def generate_events(config):
 
     event_bundle = []
 
-    while total_bytes < byte_limit:
+    while event_count < estimated_events:
       current_time = time.time()
       sample = random.choice(events)
     
@@ -213,36 +213,30 @@ def generate_events(config):
       if dt.now(timezone.utc) > attack_time:
           event = generate_event(getMaliciousEntry(), config)
           # Calculate a random delay within the next 40 minutes to 1 hour
-          jitter_minutes = random.randint(40, 59)
+          jitter_minutes = random.randint(40, 59) * 60
           jitter_seconds = random.randint(0, 59)
           attack_delay = jitter_minutes * 60 + jitter_seconds
           attack_time = dt.now(timezone.utc) + timedelta(seconds=attack_delay)
 
       event_bundle.append(event)
-
+      total_bytes += len(event)
+      event_count += 1
       elapsed_time += elapsed_loop_time
 
-      if (elapsed_time >= 1):
-        # print(json.dumps(event_bundle))
-        
+      if elapsed_time >= 1 or event_count == estimated_events:
         dispatch_event(event_bundle, config)
         event_bundle = []
         elapsed_time = 0
 
-      total_bytes += len(event)
-      event_count += 1
-      time.sleep(delay_per_event)
-
-      if current_time - last_print_time >= 60:
+      if current_time - last_print_time >= 60 or event_count == estimated_events:
         elapsed_time = current_time - start_time
         elapsed_minutes = elapsed_time // 60
-        print(f"{event_count} events out of {estimated_events}, {((event_count/estimated_events)*100):.2f} % in {int(elapsed_minutes)} minute(s).")
+        print(f"{event_count:,.6g} events out of {estimated_events:,.6g} -- {((event_count/estimated_events)*100):.2f} % in {int(elapsed_minutes)} minute(s).")
         last_print_time = current_time
 
+      time.sleep(delay_per_event)
       end_time = time.time()
       elapsed_loop_time = end_time - current_time
-
-    print(f"{event_count} events out of {estimated_events}, {((event_count/estimated_events)*100):.2f} % in {int(elapsed_minutes)} minute(s).")
 
 def main():
     config = load_config()
