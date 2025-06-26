@@ -2,6 +2,68 @@
 
 This module provides a Python-based event generator for simulating realistic HTTP/HTTPS web traffic logs, including both legitimate and malicious request patterns.
 
+## Quick Start
+
+1. **Clone the Repository**
+
+```bash
+git clone https://github.com/gcastill0/project-01-extrahop.git
+cd project-01-extrahop/eventgen
+```
+
+2. **Configuration**
+
+Create a `config.json` file in the `eventgen/` directory:
+
+```json
+{
+  "webhook_url": "https://your.webhook.receiver/endpoint",
+  "output_size": "5MB",
+  "time_range": "1h"
+}
+```
+
+- `webhook_url`: Destination to POST the event data.
+- `output_size`: Total amount of data to generate (e.g., `"10MB"`, `"500KB"`, `"10GB"`).
+- `time_range`: Time range to spread events across (e.g., `"10m"`, `"1h"`, `"24h"`).
+
+Set your SDL securely as an environment variable:
+
+```bash
+export AUTH_TOKEN="your_token_here"
+```
+
+3. **Run the Generator**
+
+From the `eventgen/` directory, run:
+
+```bash
+python eventgen.py
+```
+
+**Expected output**
+
+This is what you should see when running:
+
+```bash
+python3 eventgen.py 
+[✓] External DNS resolution: your.webhook.receiver → 58.148.127.88
+[✓] TLS handshake succeeded with your.webhook.receiver
+[✓] HTTP request succeeded with status 405
+257 events out of 14,189 -- 1.81 % in 1 minute(s).
+512 events out of 14,189 -- 3.61 % in 2 minute(s).
+769 events out of 14,189 -- 5.42 % in 3 minute(s).
+1,027 events out of 14,189 -- 7.24 % in 4 minute(s).
+1,285 events out of 14,189 -- 9.06 % in 5 minute(s).
+1,541 events out of 14,189 -- 10.86 % in 6 minute(s).
+
+[...]
+
+14,189 events out of 14,189 -- 100.00 % in 59 minute(s).
+```
+
+---
+
 ## Features
 
 - Simulates realistic web application traffic (GET, POST, PUT, DELETE, etc.)
@@ -9,7 +71,7 @@ This module provides a Python-based event generator for simulating realistic HTT
 - Injects randomized malicious traffic patterns to test detection capabilities
 - Supports log export to file for replay or SIEM ingestion
 
-## Sample Output
+### Sample Output
 
 Each log entry includes:
 
@@ -24,7 +86,7 @@ Each log entry includes:
 - User-agent
 - Malicious payloads (optional)
 
-## Example Entry
+### Example Entry
 
 ```json
 {
@@ -50,7 +112,7 @@ Each log entry includes:
   "user": "alice"
 }
 ```
-## Malicious Patterns
+### Malicious Patterns
 
 The malicious log entries are based on common attack patterns. Each record includes realistic fields like client, server, uri, method, status_code, and headers—targeting paths such as /admin, /wp-login.php, or exploits like ?cmd=rm -rf / or XSS.
 
