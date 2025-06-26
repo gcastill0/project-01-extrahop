@@ -62,6 +62,33 @@ python3 eventgen.py
 14,189 events out of 14,189 -- 100.00 % in 59 minute(s).
 ```
 
+4. **Wave vs. Linear**
+
+At the moment the generator defaults to a wave distribution pattern. In this mode, we extropolate event distribution across the configured time period reflecting two periods of a Sine wave.
+
+![Wave Pattern](img/wave.png)
+
+You may defer to an even distribution pattern by using the linear function instead. In that mode, the events are evenly distributed across the configured time period.
+
+![Linear Pattern](img/linear.png)
+
+To alter this behaviour, update the function call in the main method. [See lines 316–327 of eventgen.py](https://github.com/gcastill0/project-01-extrahop/blob/main/eventgen/eventgen.py#L316-L327)
+
+
+```python
+def main():
+    config = load_config()
+
+    if not preflight_check(
+        url = config["webhook_url"], 
+        auth_token = config["auth_token"]
+    ):
+        print("❌ Network conditions are not suitable. Exiting.")
+        exit(1)
+        
+    # generate_events_linear(config)
+    generate_events_wave(config)
+```
 ---
 
 ## Features

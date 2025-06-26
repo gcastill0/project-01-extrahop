@@ -323,6 +323,7 @@ def main():
         print("❌ Network conditions are not suitable. Exiting.")
         exit(1)
         
+    # generate_events_linear(config)
     generate_events_wave(config)
 
 if __name__=="__main__":
