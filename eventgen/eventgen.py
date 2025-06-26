@@ -7,6 +7,7 @@ import math
 from datetime import datetime as dt, timezone, timedelta
 from aws_ip_generator import simulate_ips_for_region, us_east_ranges, us_west_ranges
 from samplegen import getMaliciousEntry, getBeningEntries
+from preflight import preflight_check
 
 # Simulate a public IP Address
 def get_public_ip():
@@ -240,6 +241,14 @@ def generate_events(config):
 
 def main():
     config = load_config()
+
+    if not preflight_check(
+        url = config["webhook_url"], 
+        auth_token = config["auth_token"]
+    ):
+        print("❌ Network conditions are not suitable. Exiting.")
+        exit(1)
+        
     generate_events(config)
 
 if __name__=="__main__":
