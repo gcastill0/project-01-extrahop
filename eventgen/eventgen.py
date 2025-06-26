@@ -173,7 +173,7 @@ def calculate_average_event_size(events):
     average_size = total_size / len(events) if events else 0
     return average_size
 
-def generate_events(config):
+def generate_events_linear(config):
     # Use the sample events to rehydrate new events in the future
     # f = open(config["samples"])
     events = getBeningEntries()
@@ -239,6 +239,80 @@ def generate_events(config):
       end_time = time.time()
       elapsed_loop_time = end_time - current_time
 
+def generate_events_wave(config):
+    # Load samples
+    events = getBeningEntries()
+
+    # Config parameters
+    byte_limit = parse_size(config['output_size'])
+    total_time_seconds = parse_time_range(config["time_range"])
+    average_event_size = math.ceil(calculate_average_event_size(events))
+    estimated_events = round(byte_limit / average_event_size)
+    total_minutes = math.ceil(total_time_seconds / 60)
+
+    # Build sine multipliers over 2 full periods
+    multipliers = []
+    for i in range(total_minutes):
+        radians = (2 * math.pi * 2 * i) / total_minutes  # 2 full sine wave periods
+        value = (math.sin(radians) + 1) / 2              # Normalize to 0–1
+        scaled = 0.2 + (value * 0.8)                     # Scale to 0.2–1.0
+        multipliers.append(scaled)
+
+    # Normalize multipliers to match total event count
+    multiplier_sum = sum(multipliers)
+    normalized_multipliers = [m / multiplier_sum for m in multipliers]
+    events_per_minute = [round(estimated_events * m) for m in normalized_multipliers]
+
+    print("Total estimated events:", estimated_events)
+    print("Distribution per minute (sample):", events_per_minute[:10], "...")
+
+    event_count = 0
+    total_bytes = 0
+    start_time = time.time()
+    last_print_time = start_time
+
+    # First malicious attack scheduling
+    jitter_seconds = random.randint(300, 599) # Between 5–10 min
+    attack_time = dt.now(timezone.utc) + timedelta(seconds=jitter_seconds)
+
+    for minute_index, event_count_this_minute in enumerate(events_per_minute):
+        bundle = []
+        minute_start_time = time.time()
+        delay_between_events = 60 / event_count_this_minute if event_count_this_minute > 0 else 0
+
+        for _ in range(event_count_this_minute):
+            now = dt.now(timezone.utc)
+
+            if now > attack_time:
+                sample = getMaliciousEntry()
+                # Schedule next malicious attack
+                jitter_seconds = random.randint(2400, 3599)  # Between 40–60 min
+                attack_time = now + timedelta(seconds=jitter_seconds)
+            else:
+                sample = random.choice(events)
+
+            event = generate_event(sample, config)
+            bundle.append(event)
+            total_bytes += len(json.dumps(event).encode("utf-8"))
+            event_count += 1
+
+            if delay_between_events > 0:
+                time.sleep(delay_between_events)
+
+        dispatch_event(bundle, config)
+
+        # Logging
+        now = time.time()
+        if now - last_print_time > 60:
+            elapsed_minutes = (now - start_time) / 60
+            pct = (event_count / estimated_events) * 100
+            print(f"{event_count:,.6g} events out of {estimated_events:,.6g} -- {pct:.2f}% in {int(elapsed_minutes)} minute(s).")
+            last_print_time = now
+
+    # Final log
+    total_elapsed = time.time() - start_time
+    print(f"Completed: {event_count:,} events in {total_elapsed:.2f} seconds ({total_elapsed/60:.2f} minutes)")
+
 def main():
     config = load_config()
 
@@ -249,7 +323,7 @@ def main():
         print("❌ Network conditions are not suitable. Exiting.")
         exit(1)
         
-    generate_events(config)
+    generate_events_wave(config)
 
 if __name__=="__main__":
     main()
