@@ -30,7 +30,7 @@ Create a `config.json` file in the `eventgen/` directory:
 Set your SDL securely as an environment variable:
 
 ```bash
-export AUTH_TOKEN="your_token_here"
+export AUTH_TOKEN="0abc1dAeB2CfghDiEFj5klmG_JKnopq6Hr7sIMNOtPv8=="
 ```
 
 3. **Run the Generator**
@@ -147,16 +147,15 @@ The malicious log entries are based on common attack patterns. Each record inclu
  - Risk Level: Indicates the relative impact if the attack is successful.
  - URI Pattern: Can be used for detection rules or input sanitization guidance.
 
-| URI Pattern                         | Description                                                                 | Attack Type             | Risk Level |
-|-------------------------------------|-----------------------------------------------------------------------------|--------------------------|------------|
-| `/admin`                            | Probing for unsecured admin portal.                                         | Unauthorized Access      | High       |
-| `/wp-login.php`                     | Attempt to access WordPress login page—common brute-force target.          | Brute Force              | High       |
-| `/api/user?id=1 OR 1=1`            | SQL injection attempting to bypass authentication or extract data.         | SQL Injection            | Critical   |
-| `/index.php?page=../../etc/passwd` | Path traversal trying to read system password file on Unix systems.        | Directory Traversal      | High       |
-| `/api/search?q=<script>alert(1)</script>` | XSS injection testing client-side script execution.                 | Cross-Site Scripting     | Medium     |
-| `/cgi-bin/test.cgi?cmd=rm -rf /`   | Command injection attempting destructive server command.                   | Remote Code Execution    | Critical   |
-| `/?id=1;DROP TABLE users`          | SQL injection that tries to delete a database table.                       | SQL Injection            | Critical   |
-| `/phpmyadmin`                      | Scanning for phpMyAdmin—a known admin portal with vulnerabilities.         | Reconnaissance           | Medium     |
-| `/api/data?user=admin'--`          | SQL injection using comment to ignore password clause.                     | SQL Injection            | High       |
-| `/etc/shadow`                      | Attempt to access sensitive system file directly (Linux-based systems).    | Unauthorized File Access | High       |
-
+| URI Pattern                         | Description                                                                 | Attack Type             | Risk Level | MITRE Tactic         | MITRE Technique (ID)          |
+|-------------------------------------|-----------------------------------------------------------------------------|--------------------------|------------|-----------------------|-------------------------------|
+| `/admin`                            | Probing for unsecured admin portal.                                         | Unauthorized Access      | High       | Initial Access        | [T1190 - Exploit Public-Facing Application](https://attack.mitre.org/techniques/T1190/) |
+| `/wp-login.php`                     | Attempt to access WordPress login page—common brute-force target.          | Brute Force              | High       | Credential Access     | [T1110.001 - Password Guessing](https://attack.mitre.org/techniques/T1110/001/)        |
+| `/api/user?id=1 OR 1=1`            | SQL injection attempting to bypass authentication or extract data.         | SQL Injection            | Critical   | Credential Access     | [T1078 - Valid Accounts](https://attack.mitre.org/techniques/T1078/)                  |
+| `/index.php?page=../../etc/passwd` | Path traversal trying to read system password file on Unix systems.        | Directory Traversal      | High       | Discovery             | [T1083 - File and Directory Discovery](https://attack.mitre.org/techniques/T1083/)     |
+| `/api/search?q=<script>alert(1)</script>` | XSS injection testing client-side script execution.                 | Cross-Site Scripting     | Medium     | Collection            | [T1056.001 - Input Capture via Web](https://attack.mitre.org/techniques/T1056/001/)    |
+| `/cgi-bin/test.cgi?cmd=rm -rf /`   | Command injection attempting destructive server command.                   | Remote Code Execution    | Critical   | Execution / Impact    | [T1059 - Command and Scripting Interpreter](https://attack.mitre.org/techniques/T1059/) |
+| `/?id=1;DROP TABLE users`          | SQL injection that tries to delete a database table.                       | SQL Injection            | Critical   | Impact                | [T1485 - Data Destruction](https://attack.mitre.org/techniques/T1485/)                 |
+| `/phpmyadmin`                      | Scanning for phpMyAdmin—a known admin portal with vulnerabilities.         | Reconnaissance           | Medium     | Reconnaissance        | [T1595.002 - Active Scanning](https://attack.mitre.org/techniques/T1595/002/)          |
+| `/api/data?user=admin'--`          | SQL injection using comment to ignore password clause.                     | SQL Injection            | High       | Credential Access     | [T1078 - Valid Accounts](https://attack.mitre.org/techniques/T1078/)                  |
+| `/etc/shadow`                      | Attempt to access sensitive system file directly (Linux-based systems).    | Unauthorized File Access | High       | Discovery             | [T1083 - File and Directory Discovery](https://attack.mitre.org/techniques/T1083/)     |

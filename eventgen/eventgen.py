@@ -59,10 +59,10 @@ def generate_event_template():
     event_template = {
       "event" : {               
         "message": "Message",
-        "severity": "INFO"
+        "severity": 99
       },
       "time" : 1,  
-      "host": "D6T6RGQQ4T",    
+      "host": os.uname()[1],
       "source" : "Python Generator",  
       "sourcetype" : "",   
       "index": "",        
@@ -87,14 +87,14 @@ def generate_event(sample, config):
 
     # Refactor data properties from event sample
     event_template["time"] = unix_time
-    event_template["sourcetype"] = "Extrahop"
+    event_template["sourcetype"] = "http-access-record"
 
     event["server"]["ipaddr"] = random.choice(config["server_ips"])
     event["round_trip_time"]  = random.randint(20, 500)
     
     # Check if the event is HTTP or HTTPS to capture transaction data
     # Create a dictionary with all relevant transaction data fields
-    json_data = {
+    record_data = {
         # "timestamp": event["time"],                                      # Transaction timestamp in ISO format
         "protocol": "HTTP" if event["protocol"] == "HTTP" else "HTTPS",    # Determine the protocol
         "client_ip": str(event["client"]["ipaddr"]),                       # Client IP address
@@ -105,24 +105,20 @@ def generate_event(sample, config):
         "duration": event["round_trip_time"],                              # Transaction duration
         "request_headers": event["request_header"],                        # HTTP request headers
         "response_headers": event["response_header"],                      # HTTP response headers
-        "user_agent": event["user_agent"],                                 # User agent string
         "content_type": event["response_content_type"],                    # Response content type
         "user": event["user"]                                              # User
     }
 
-    event_template["fields"] = json_data
-
-    # Update with rare remote IP
-    # if event["user"] == 'alice' and client_public_ip is not None: 
-    #     json_data["client_ip"] = str(client_public_ip)
+    # event_template["fields"] = json_data
+    event_template.update(record_data)
 
     # Convert the dictionary to a JSON string
     # final_event = json.dumps(json_data)
-    final_event = event_template
+    # final_event = event_template
 
     # print(final_event)
 
-    return final_event
+    return event_template
 
 def dispatch_event(events, config):
     # Send the JSON data to the webhook URL using an HTTP POST request
@@ -274,6 +270,7 @@ def generate_events_wave(config):
     # First malicious attack scheduling
     jitter_seconds = random.randint(300, 599) # Between 5–10 min
     attack_time = dt.now(timezone.utc) + timedelta(seconds=jitter_seconds)
+    print("First Attack Time:",attack_time)
 
     for minute_index, event_count_this_minute in enumerate(events_per_minute):
         bundle = []
@@ -288,6 +285,7 @@ def generate_events_wave(config):
                 # Schedule next malicious attack
                 jitter_seconds = random.randint(2400, 3599)  # Between 40–60 min
                 attack_time = now + timedelta(seconds=jitter_seconds)
+                print("Next Attack Time:",attack_time)
             else:
                 sample = random.choice(events)
 

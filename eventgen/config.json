@@ -1,5 +1,5 @@
 {
-  "webhook_url": "https://ingest.us1.sentinelone.net/services/collector/event",
+  "webhook_url": "https://ingest.us1.sentinelone.net/services/collector/raw?sourcetype=http-access-record",
   "output_size": "10MB",
   "time_range": "1h"
 }

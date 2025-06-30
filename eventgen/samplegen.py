@@ -8,17 +8,17 @@ fake = Faker()
 
 # Define malicious patterns
 malicious_patterns = [
-    ("/admin", "GET", 401, "WARN", "Probing for unsecured admin portal."),
-    ("/wp-login.php", "POST", 403, "WARN", "Login page common brute-force target."),
-    ("/login", "POST", 401, "WARN", "Attempt to access generic login page."),
-    ("/etc/passwd", "GET", 404, "WARN", "Unix password file enumeration attempt."),
-    ("/index.php?user=admin'--", "GET", 403, "HIGH", "SQL injection using comment truncation."),
-    ("/search?q=<script>alert(1)</script>", "GET", 400, "HIGH", "Cross-site scripting (XSS) injection test."),
-    ("/api/delete/../../etc/passwd", "DELETE", 403, "HIGH", "Path traversal attempt to access restricted files."),
-    ("/api/user?id=1 OR 1=1", "DELETE", 403, "HIGH", "SQL injection bypass attempt using logical tautology."),
-    ("/api/upload", "POST", 405, "WARN", "Upload attempt to disabled or unpermitted endpoint."),
-    ("/.git/config", "GET", 404, "HIGH", "Reconnaissance for exposed version control metadata."),
-    ("/?cmd=rm+-rf+/", "GET", 400, "HIGH", "Command injection probing for remote shell execution."),
+    ("/admin", "GET", 401, 2, "Probing for unsecured admin portal."),
+    ("/wp-login.php", "POST", 403, 3, "Login page common brute-force target."),
+    ("/login", "POST", 401, 2, "Attempt to access generic login page."),
+    ("/etc/passwd", "GET", 404, 3, "Unix password file enumeration attempt."),
+    ("/index.php?user=admin'--", "GET", 403, 4, "SQL injection using comment truncation."),
+    ("/search?q=<script>alert(1)</script>", "GET", 400, 4, "Cross-site scripting (XSS) injection test."),
+    ("/api/delete/../../etc/passwd", "DELETE", 403, 4, "Path traversal attempt to access restricted files."),
+    ("/api/user?id=1 OR 1=1", 5, 403, "HIGH", "SQL injection bypass attempt using logical tautology."),
+    ("/api/upload", "POST", 405, 5, "Upload attempt to disabled or unpermitted endpoint."),
+    ("/.git/config", "GET", 404, 4, "Reconnaissance for exposed version control metadata."),
+    ("/?cmd=rm+-rf+/", "GET", 400, 5, "Command injection probing for remote shell execution."),
 ]
 
 
@@ -54,7 +54,7 @@ def generate_log_entry(malicious=False, pattern = {}):
         method = random.choice(["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD"])
         status = random.choice([200, 201, 202, 204, 206, 301, 302, 303, 304, 307, 308, 408, 429, 500, 501, 502, 503, 504])
         client_ip = fake.ipv4_public()
-        severity = "INFO"
+        severity = 1
         message = "Common incoming request."
         
     return {
@@ -77,7 +77,6 @@ def generate_log_entry(malicious=False, pattern = {}):
             "Content-Type": "application/json",
             "Content-Length": str(random.randint(0, 10000))
         },
-        "user_agent": fake.user_agent(),
         "response_content_type": "application/json",
         "user": fake.user_name()
     }
