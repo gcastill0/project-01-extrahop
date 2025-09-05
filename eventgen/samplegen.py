@@ -3,6 +3,7 @@ import time
 import json
 from faker import Faker
 import ipaddress
+from functools import lru_cache
 
 fake = Faker()
 
@@ -20,7 +21,6 @@ malicious_patterns = [
     ("/.git/config", "GET", 404, 4, "Reconnaissance for exposed version control metadata."),
     ("/?cmd=rm+-rf+/", "GET", 400, 5, "Command injection probing for remote shell execution."),
 ]
-
 
 # Define CIDRs for high-risk countries
 high_risk_cidrs = [
@@ -43,6 +43,21 @@ def random_ip_from_cidr(cidr):
     # Skip network and broadcast addresses
     return str(random.choice(list(net.hosts())))
 
+@lru_cache(maxsize=None)
+def generate_ip_pool(size=100, include_ipv6=False):
+    """
+    Generate a pool of IP addresses using Faker.
+    
+    :param size: Number of IP addresses to generate (default 100).
+    :param include_ipv6: Whether to include IPv6 addresses in the pool (default False).
+    :return: List of IP addresses.
+    """
+    fake = Faker()
+    if include_ipv6:
+        return [fake.ipv4() if i % 2 == 0 else fake.ipv6() for i in range(size)]
+    else:
+        return [fake.ipv4() for _ in range(size)]
+
 # Function to generate a single log entry (malicious or benign)
 def generate_log_entry(malicious=False, pattern = {}):
     if malicious:
@@ -53,7 +68,7 @@ def generate_log_entry(malicious=False, pattern = {}):
         uri = "/" + fake.uri_path()
         method = random.choice(["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD"])
         status = random.choice([200, 201, 202, 204, 206, 301, 302, 303, 304, 307, 308, 408, 429, 500, 501, 502, 503, 504])
-        client_ip = fake.ipv4_public()
+        client_ip = random.choice(generate_ip_pool())
         severity = 1
         message = "Common incoming request."
         
