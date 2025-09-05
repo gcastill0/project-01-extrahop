@@ -72,7 +72,7 @@ You may defer to an even distribution pattern by using the linear function inste
 
 ![Linear Pattern](img/linear.png)
 
-To alter this behaviour, update the function call in the main method. [See lines 316–327 of eventgen.py](https://github.com/gcastill0/project-01-extrahop/blob/main/eventgen/eventgen.py#L316-L327)
+To alter this behaviour, update the function call in the main method. [See lines 314–325 of eventgen.py](https://github.com/gcastill0/project-01-extrahop/blob/main/eventgen/eventgen.py#L314-L325)
 
 
 ```python
